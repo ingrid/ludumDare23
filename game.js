@@ -1,3 +1,4 @@
+jam.includeModule("ArcadeInput");
 jam.includeModule("RectCollision");
 jam.includeModule("ProtoTools");
 
@@ -6,17 +7,17 @@ window.onload = function(){
 };
 
 initialize = function(){
-    var BOID_COUNT = 20;
+    var BOID_COUNT = 80;
+    var PLAYER_SPEED = 120;
     var game = jam.Game(800, 600, document.body);
     var background = jam.Sprite(0, 0);
     background.setImage("assets/test_mask.png");
-    background.oldRender = background.render;
     background.center = jam.Vector(0, 0);
     background.update = jam.extend(background.update, function(){
-        if(jam.Input.buttonDown("RIGHT")){
+        if(jam.Input.buttonDown("A")){
 	    background.angle += 1;
 	}
-	if(jam.Input.buttonDown("LEFT")){
+	if(jam.Input.buttonDown("D")){
 	    background.angle -= 1;
 	}
     });
@@ -24,8 +25,10 @@ initialize = function(){
     background.render = function(context, camera){
 	if(background.image !== null && background.visible){
 	    
-	    var tx = Math.floor(background.x - camera.scroll.x * background.parallax.x + background.width/2);
-	    var ty = Math.floor(background.y - camera.scroll.y * background.parallax.y + background.height/2);
+	    //	    var tx = Math.floor(background.x - camera.scroll.x * background.parallax.x + background.width/2);
+	    //	    var ty = Math.floor(background.y - camera.scroll.y * background.parallax.y + background.height/2);
+	    var tx = -Math.floor(camera.scroll.x + jam.Game._canvas.width/2);
+	    var ty = -Math.floor(camera.scroll.y + jam.Game._canvas.height/2);
 	    context.save();
 	    
 	    context.translate(tx, ty);
@@ -45,10 +48,12 @@ initialize = function(){
 	}
     };
 
-    var player = {};
     game.add(background);
-    player.x = 50;
-    player.y = 50;
+
+    var player = jam.Sprite(50, 50);
+    player.rectangleImage(20, 20, "rgb(255, 0, 0)");
+    game.add(player);
+    game.camera.follow = player;
     player.boids = [];
     var makeBoid = function(x, y){
 	var boid = jam.Sprite(x, y);
@@ -88,8 +93,7 @@ initialize = function(){
     var mask = undefined;
 
     game.update = jam.extend(game.update, function(elapsed){
-        player.x = jam.Input.mouse.x;
-	player.y = jam.Input.mouse.y;
+	player.velocity = jam.Vector.mul(jam.Input.joy, PLAYER_SPEED);
     });
 
     for(var i = 0; i < BOID_COUNT + 1; i++){
