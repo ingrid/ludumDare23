@@ -7,8 +7,9 @@ window.onload = function(){
 };
 
 initialize = function(){
-    var BOID_COUNT = 80;
-    var PLAYER_SPEED = 120;
+    var BOID_COUNT = 10;
+    var PLAYER_SPEED = 80;
+    var FRICTION = 0.15;
     var game = jam.Game(800, 600, document.body);
     var background = jam.Sprite(0, 0);
     background.setImage("assets/test_mask.png");
@@ -93,11 +94,13 @@ initialize = function(){
     var mask = undefined;
 
     game.update = jam.extend(game.update, function(elapsed){
-	player.velocity = jam.Vector.mul(jam.Input.joy, PLAYER_SPEED);
+	    player.accel = jam.Vector.mul(jam.Input.joy, PLAYER_SPEED);
+        player.accel = jam.Vector.sub(player.accel, jam.Vector.mul(player.velocity, FRICTION));
+        player.velocity = jam.Vector.add(player.velocity, player.accel);
     });
 
     for(var i = 0; i < BOID_COUNT + 1; i++){
-	makeBoid(i, i);
+	    makeBoid(i, i);
     }
     game.run();
 };
